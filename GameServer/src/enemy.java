@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -17,15 +19,15 @@ public class enemy extends Sprite implements Runnable{
 	
 	private Boolean moving, visible, enemyAlive, bombermanAlive,horizontal, direction; 
 	private Thread t;
-	private JLabel enemyLabel, bombermanLabel;
-	private int limit = 0,flag1=0,flag2=0;
-	private JButton animationButton;
+	private int limit = 0,flag1=0,flag2=0,flag3=0,flag4=0;
+	private String name;
 	private bomber bomberman;
-	private bomb bomb,bomb2, bomb_ex_right, bomb_ex_left, bomb_ex_up, bomb_ex_down;
+	private bomb bomb,bomb_ex_right, bomb_ex_left, bomb_ex_up, bomb_ex_down;
 	private Connection conn = null;
 	private Statement stmt = null;
 	private final int CLIENT_PORT = 5656;
-	private int number=0;
+	private int number=0,score=0;
+	
 	
 	public Boolean getMoving() {return moving;}
 	public Boolean getEnemyAlive() {return enemyAlive;} 
@@ -40,9 +42,7 @@ public class enemy extends Sprite implements Runnable{
 	//Work with bomb, bomb explosion and bomberman features
 	public void setBomberman (bomber temp) {this.bomberman=temp;}
 	public void setFlag1 (int temp) {this.flag1=temp;}
-	public void setFlag2 (int temp) {this.flag2=temp;}
 	public void setBomb(bomb temp) {this.bomb= temp;}
-	public void setBomb2(bomb temp) {this.bomb2= temp;}
 	public void setVisible(Boolean visible) {this.visible = visible;}
 	public void setEnemyAlive(Boolean temp) {this.enemyAlive=temp;}
 	public void setBombermanAlive(Boolean temp) {this.bombermanAlive=temp;}
@@ -54,9 +54,6 @@ public class enemy extends Sprite implements Runnable{
 		this.bomb_ex_down= temp4;
 	}
 	
-	public void setEnemyLabel(JLabel temp) {this.enemyLabel = temp;}
-	public void setBombermanLabel(JLabel temp) {this.bombermanLabel = temp;}
-	public void setAnimationButton(JButton temp) {this.animationButton = temp;}
 	public void setLimit(int temp) {this.limit = temp;}
 	
 	public void hide() { this.visible= false; }
@@ -98,7 +95,6 @@ public class enemy extends Sprite implements Runnable{
 		   this.moving=false;
 		   this.direction=true;
 		   this.enemyAlive=true;
-		   this.enemyLabel= temp;
 		   this.horizontal=true;
 		   this.visible=false;
 		   this.bombermanAlive=true;
@@ -169,12 +165,13 @@ public class enemy extends Sprite implements Runnable{
 			out.println(commandOut);
 			out.flush();
 			
-			//System.out.println(bomberman.getX()+" "+bomberman.getY());
+			retrieveCoordinates();
+			retrieveBombPosition();
 			
 			if (enemyAlive== true) {
 				detectBombermanCollision();
-		//		detectBombCollision();
-		//		detectBombExplosion();
+				detectBombCollision();
+				detectBombExplosion();
 		//		gameEnd();
 			}
 			
@@ -183,7 +180,8 @@ public class enemy extends Sprite implements Runnable{
 			} catch(Exception e) { 
 				
 			}
-		}}
+		}
+		}
 		catch (Exception E)
 		{
 			E.printStackTrace();
@@ -191,20 +189,229 @@ public class enemy extends Sprite implements Runnable{
 		
 	}
 	
-	private void detectBombermanCollision() {
+	
+	/////////////////////////////////////////////////////DATABASE//////////////////////////////////////////////////////
+	
+	public void updateEnemyAlive1 () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE ENEMY SET ALIVE = "+1+" WHERE ID='"+1+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				System.out.println("enemy1 has died");
+  				
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void updateEnemyAlive2 () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE ENEMY SET ALIVE2 = "+1+" WHERE ID='"+1+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				System.out.println("enemy2 has died");
+  				
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void updateEnemyAlive3 () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE ENEMY SET ALIVE3 = "+1+" WHERE ID='"+1+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				System.out.println("enemy3 has died");
+  				
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void updateEnemyAlive4 () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE ENEMY SET ALIVE4 = "+1+" WHERE ID='"+1+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void retrieveBombPosition() {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				String sql ="SELECT * FROM BOMBPOSITION WHERE ID="+1+"";
+                ResultSet rs = stmt.executeQuery(sql);
+				
+  				while ( rs.next() ) {
+					bomb.setX(rs.getInt("BOMBX")) ;
+					bomb.setY(rs.getInt("BOMBY")) ;
+					bomb_ex_right.setX(rs.getInt("BOMB2X")) ;
+					bomb_ex_right.setY(rs.getInt("BOMB2Y")) ;
+					bomb_ex_left.setX(rs.getInt("BOMB3X")) ;
+					bomb_ex_left.setY(rs.getInt("BOMB3Y")) ;
+					bomb_ex_up.setX(rs.getInt("BOMB4X")) ;
+					bomb_ex_up.setY(rs.getInt("BOMB4Y")) ;
+					bomb_ex_down.setX(rs.getInt("BOMB5X")) ;
+					bomb_ex_down.setY(rs.getInt("BOMB5Y")) ;
+				}
+  				
+  				
+  				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void retrieveCoordinates () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				String sql ="SELECT * FROM BOMBER WHERE ID="+1+"";
+                ResultSet rs = stmt.executeQuery(sql);
+				
+  				while ( rs.next() ) {
+					bomberman.setX(rs.getInt("X"));
+					bomberman.setY(rs.getInt("Y"));
+				}
+  				
+  				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	private void detectBombermanCollision() throws IOException{
+		
+		
+			Socket s4 = new Socket("localhost", CLIENT_PORT);
+			
+			//Initialize data stream to send data out
+			OutputStream outstream = s4.getOutputStream();
+			PrintWriter out = new PrintWriter(outstream);
+			
 		if(this.r.intersects(bomberman.getRectangle())) {
 			this.bombermanAlive =false;
 			System.out.println("dead");
 			//animationButton.setText("Re-start");
-			//bombermanLabel.setIcon( new ImageIcon( getClass().getResource("smallninja2.png")));
-			
+			if (flag1==0) {
+			retrieveNameScores();
+			String commandOut= "BOMBERMAND "+name+" "+score;
+			out.println(commandOut);
+			out.flush();
+			flag1=1;
+			}
 		}
+		
 	}
 	
 	private void gameEnd() {
 		if(this.bombermanAlive == false) {
 			if (this.flag1==0) {
-				JOptionPane.showMessageDialog(null, "Player 1 died!", "Ooops!", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Player died!", "Ooops!", JOptionPane.INFORMATION_MESSAGE);
 				//displayAllScores();
 				this.flag1=1;
 			}
@@ -217,108 +424,77 @@ public class enemy extends Sprite implements Runnable{
 	
 	// detect bomb and change direction of enemy so they do not share same space
 	private void detectBombCollision() {
-		if(this.r.intersects(bomb.getRectangle())||this.r.intersects(bomb2.getRectangle())) {
+		if(this.r.intersects(bomb.getRectangle())) {
 			direction = !direction;
 		}
 	}
 	
 	//detect if explosion reaches enemy
-	private void detectBombExplosion() {
+	private void detectBombExplosion() throws IOException{
+		
+		Socket s4 = new Socket("localhost", CLIENT_PORT);
+		
+		//Initialize data stream to send data out
+		OutputStream outstream = s4.getOutputStream();
+		PrintWriter out = new PrintWriter(outstream);
+		
 		if(this.r.intersects(bomb_ex_right.getRectangle()) || this.r.intersects(bomb_ex_left.getRectangle()) ||
 			this.r.intersects(bomb_ex_down.getRectangle()) || this.r.intersects(bomb_ex_up.getRectangle())) {
 			this.moving=false;
 			this.enemyAlive =false;
+			
+			if (number==0) {
+				updateEnemyAlive1();
+			}else if (number==1) {
+				updateEnemyAlive2();
+			}else if (number==2) {
+				updateEnemyAlive3();
+			}else if (number==3) {
+				updateEnemyAlive4();
+			}
+			
+			String commandOut= "BOMBENEMY"+ " "+ number;
+			out.println(commandOut);
+			out.flush();
 			//enemyLabel.setIcon( new ImageIcon( getClass().getResource("enemy2.png")));
 			
 		}
 		
 	}
 	
-	private void displayAllScores() {
-		
-		String[] id_array = new String[1] ;
-		String[] name_array = new String[1];
-		String[] score_array = new String[1];
-		
-		int counter= 0;
+	public void retrieveNameScores () {
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
+			
+			
 			String dbURL = "jdbc:sqlite:product.db";
 			conn = DriverManager.getConnection(dbURL);
 			
 			if (conn != null) {
 				conn.setAutoCommit(false);
 				stmt = conn.createStatement();
-				String sql ="SELECT * FROM SCORES ORDER BY SCORE DESC"; 
+				String sql ="SELECT * FROM SCORES WHERE ID="+1+"";
                 ResultSet rs = stmt.executeQuery(sql);
-				while ( rs.next() ) {
-					counter=counter+1;
+				
+  				while ( rs.next() ) {
+					name = rs.getString("NAME");
+					score = rs.getInt("SCORE");
 				}
-				rs.close();
+  				
+  				System.out.println(name);
+  				
+  				rs.close();
+                conn.close();
 			}
 			
-			if (conn != null) {
-				System.out.println("Connected to database");
-				conn.setAutoCommit(false);
-				
-				stmt = conn.createStatement();
-				
-				String sql ="SELECT * FROM SCORES ORDER BY SCORE DESC"; 
-                
-				ResultSet rs = stmt.executeQuery(sql);
-				
-				id_array = new String [counter];
-				name_array = new String [counter];
-				score_array = new String [counter];
-				
-				counter = 0;
-				
-				while ( rs.next() ) {
-					
-					int id = rs.getInt("id");
-					String name = rs.getString("name");
-					int score = rs.getInt("score");
-					id_array[counter] = String.valueOf(id);
-					name_array[counter] = name;
-					score_array[counter] = String.valueOf(score);
-					counter=counter+1;
-				}
-				
-				rs.close();
-				conn.close();
-			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
 		}
-		
-		StringBuilder sb = new StringBuilder(64);
-		
-		String[] record = new String[5];
-		
-		if(counter>5) {counter=5;}
-		
-		for (int i=0; i<counter; i++) {
-		
-			record[i] = "<td>" + String.valueOf(id_array[i]) + "</td><td>"+ String.valueOf(name_array[i]) + "</td><td>" + String.valueOf(score_array[i]) + "</td>";
-		
-		}
-		
-		sb.append("<html><table><tr><td>Player</td><td>Name</td><td>Score</td></tr>");
-	    
-	    for (int i=0; i<5; i++) {
-	    	sb.append("<tr>").append(record[i]).append("</tr>");
-	    }
-	    
-	    sb.append("</table></html>");
-	    
-		JOptionPane.showMessageDialog(null, sb, "Top Scores", JOptionPane.INFORMATION_MESSAGE);
-		
 	}
-	
 	
 }

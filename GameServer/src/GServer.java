@@ -31,7 +31,11 @@ public class GServer {
 				String sql = "DROP TABLE IF EXISTS MAPS"; stmt.executeUpdate(sql); conn.commit();
 				sql = "DROP TABLE IF EXISTS BPOSITION"; stmt.executeUpdate(sql); conn.commit();
 				sql = "DROP TABLE IF EXISTS BOMBER"; stmt.executeUpdate(sql); conn.commit();
-								
+				sql = "DROP TABLE IF EXISTS BOMBPOSITION"; stmt.executeUpdate(sql); conn.commit();
+				sql = "DROP TABLE IF EXISTS ENEMY"; stmt.executeUpdate(sql); conn.commit();
+				sql = "DROP TABLE IF EXISTS ENEMYDOWN"; stmt.executeUpdate(sql); conn.commit();
+				sql = "DROP TABLE IF EXISTS SCORES"; stmt.executeUpdate(sql); conn.commit();
+				
                 conn.close();
 			}
 			

@@ -22,15 +22,21 @@ public class GSService implements Runnable {
 	private long map1,map2,map3,map4,map5,map6,map7;
 	private long bomber1, bomber2, bomber3, bomber4, bomber5, bomber6, bomber7;
 	private int[][]bombermanPosition = { {1,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3} };
+	private int positionX, positionY;
+	private int score=0;
+	private String name="";
 	private enemy enemy[] = new enemy[4];
 	private bomb bomb_ex[] = new bomb[5];
 	private bomber bomberman;
 	private long bman1,bman2,bman3,bman4,bman5,bman6,bman7;
 	private Socket s;
 	private Scanner in;
+	private int alive, alive2,alive3,alive4;
 	private int xCoordinate=25, yCoordinate=0;
 	private walls bricks=new walls();
+	private int[] enemy_down = new int[4];
 	private walls bricksArray[][] = new walls[7][12];
+	
 	
 	public GSService (Socket aSocket) {
 		this.s = aSocket;
@@ -135,6 +141,16 @@ public class GSService implements Runnable {
 		enemy[2].setCoordinates(625, 500);
 		enemy[3].setCoordinates(1025, 300);
 		
+		alive=0;
+		alive2=0;
+		alive3=0;
+		alive4=0;
+		
+		enemy_down[0]=0;
+		enemy_down[1]=0;
+		enemy_down[2]=0;
+		enemy_down[3]=0;
+		
 		arrayToLongBomber();
 		arrayToLongMap();
 		
@@ -189,16 +205,55 @@ public class GSService implements Runnable {
 			Class.forName("org.sqlite.JDBC");
 			String dbURL = "jdbc:sqlite:product.db";
 			conn = DriverManager.getConnection(dbURL);
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+									
+				/*
+				 * String sql = "DROP TABLE MAPS"; stmt.executeUpdate(sql); conn.commit();
+				 */
+				
+				String sql = "CREATE TABLE IF NOT EXISTS BOMBPOSITION " +
+				             "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						     " BOMBX INT NOT NULL, " + " BOMBY INT NOT NULL, " + " BOMB2X INT NOT NULL, " + " BOMB2Y INT NOT NULL, " + " BOMB3X INT NOT NULL, " + " BOMB3Y INT NOT NULL, " + 
+						     " BOMB4X INT NOT NULL, " + " BOMB4Y INT NOT NULL, " + " BOMB5X INT NOT NULL, " + " BOMB5Y INT NOT NULL) ";
+				
+				stmt.executeUpdate(sql);
+				conn.commit();
+				System.out.println("Table BOMB Created Successfully");
+				
+				sql ="SELECT * FROM BOMBPOSITION"; 
+                ResultSet rs = stmt.executeQuery(sql);
+                
+                if (rs.next() == false) {
+                	sql = "INSERT INTO BOMBPOSITION (BOMBX, BOMBY, BOMB2X, BOMB2Y, BOMB3X, BOMB3Y, BOMB4X,BOMB4Y,BOMB5X,BOMB5Y) VALUES " + 
+                            "("+ 0+","+ 0+","+ 0+","+ 0+" ,"+ 0+","+ 0+","+ 0+","+ 0+","+ 0+","+ 0+")";
+    				stmt.executeUpdate(sql);
+    				conn.commit();
+    			}
+                
+				rs.close();
+				conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
 			
 			if (conn != null) {
 				
 				conn.setAutoCommit(false);
 				stmt = conn.createStatement();
-									
-			
 				//sql = "DROP TABLE BPOSITION"; stmt.executeUpdate(sql); conn.commit();
-				
-				
 				String sql = "CREATE TABLE IF NOT EXISTS BPOSITION " +
 				             "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
 						     " BPO1 BIGINT NOT NULL, " + " BPO2 BIGINT NOT NULL, " + " BPO3 BIGINT NOT NULL, " + " BPO4 BIGINT NOT NULL, " + 
@@ -233,13 +288,9 @@ public class GSService implements Runnable {
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
-			
-			
 			String dbURL = "jdbc:sqlite:product.db";
 			conn = DriverManager.getConnection(dbURL);
-			
 			if (conn != null) {
-				
 				conn.setAutoCommit(false);
 				stmt = conn.createStatement();
 									
@@ -278,6 +329,87 @@ public class GSService implements Runnable {
 			e1.printStackTrace();
 		}
 		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "CREATE TABLE IF NOT EXISTS ENEMY " +
+				             "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						     " ALIVE INT NOT NULL, "+ " ALIVE2 INT NOT NULL, "+
+						     " ALIVE3 INT NOT NULL, "+ " ALIVE4 INT NOT NULL) ";
+						     
+				
+				stmt.executeUpdate(sql);
+				conn.commit();
+				System.out.println("Table ENEMY Created Successfully");
+				
+				sql ="SELECT * FROM ENEMY"; 
+                ResultSet rs = stmt.executeQuery(sql);
+                
+                if (rs.next() == false) {
+                	sql = "INSERT INTO ENEMY (ALIVE, ALIVE2, ALIVE3, ALIVE4) VALUES " + 
+                            "("+ alive+","+ alive2+","+ alive3+","+ alive4+")";
+    				stmt.executeUpdate(sql);
+    				conn.commit();
+    				System.out.println("ENEMY ALIVE Created Successfully");
+                }
+                
+				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "CREATE TABLE IF NOT EXISTS ENEMYDOWN " +
+				             "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						     " ALIVE1 INT NOT NULL, "+ " ALIVE2 INT NOT NULL, "+
+						     " ALIVE3 INT NOT NULL, "+ " ALIVE4 INT NOT NULL) ";
+						     
+				
+				stmt.executeUpdate(sql);
+				conn.commit();
+				System.out.println("Table ENEMYDOWN Created Successfully");
+				
+				sql ="SELECT * FROM ENEMYDOWN"; 
+                ResultSet rs = stmt.executeQuery(sql);
+                
+                if (rs.next() == false) {
+                	sql = "INSERT INTO ENEMYDOWN (ALIVE1, ALIVE2, ALIVE3, ALIVE4) VALUES " + 
+                            "("+ enemy_down[0]+","+ enemy_down[1]+","+ enemy_down[2]+","+ enemy_down[3]+")";
+    				stmt.executeUpdate(sql);
+    				conn.commit();
+    				System.out.println("ENEMYDOWN ALIVE Created Successfully");
+                }
+                
+				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		
 		try {
 			in = new Scanner(s.getInputStream());
@@ -399,7 +531,6 @@ public class GSService implements Runnable {
 				updateCoordinates();
 				
 				String commandOut = "PLAYER "+playerAction+" "+String.valueOf(bomberman.getX())+" "+ String.valueOf(bomberman.getY());
-				System.out.println("asdasdSending: " + commandOut);
 				out.println(commandOut);
 				out.flush();	
 			
@@ -413,12 +544,17 @@ public class GSService implements Runnable {
 			int enemyNo = in.nextInt();
 			
 			retrieveCoordinates();
-			System.out.println("asdasd"+bomberman.getX());
 			
-			enemy[0].setBomberman(bomberman);
-			enemy[1].setBomberman(bomberman);
-			enemy[2].setBomberman(bomberman);
-			enemy[3].setBomberman(bomberman);
+			for (int i =0; i<5 ; i++) {
+				bomb_ex[i] =  new bomb();
+			}
+			
+			for (int i =0; i<4 ; i++) {
+				enemy[i].setBomberman(bomberman);
+				
+				enemy[i].setBomb(bomb_ex[0]);
+				enemy[i].setBombEx(bomb_ex[1],bomb_ex[2],bomb_ex[3], bomb_ex[4]);
+			}
 			
 			if (!enemy[enemyNo].getMoving()) { //check and make enemies move
 				//start moving
@@ -430,13 +566,13 @@ public class GSService implements Runnable {
 			
 			retrieveCoordinates();
 			
-			int positionX=bomberman.getX();
-			int positionY=bomberman.getY();
+			positionX=bomberman.getX();
+			positionY=bomberman.getY();
 			
 			String commandOut = "BOMB "+"0 " +String.valueOf(positionX)+" "+ String.valueOf(positionY);
-			System.out.println("Sending BOMB: " + commandOut);
 			out.println(commandOut);
 			out.flush();	
+			
 			
 			
 			Timer timer = new Timer();
@@ -445,7 +581,6 @@ public class GSService implements Runnable {
 				public void run() {
 					
 					String commandOut = "BOMB "+"0 " +String.valueOf(positionX)+" "+ String.valueOf(positionY);
-					System.out.println("Sending BOMB: " + commandOut);
 					out.println(commandOut);
 					out.flush();
 					
@@ -455,11 +590,9 @@ public class GSService implements Runnable {
 							if ((bricksArray[i][j].getX() == (positionX-25)) && (bricksArray[i][j].getY() == (positionY-100))
 							&& map[i][j]!=2) {
 								commandOut = "BOMB "+"1 " +String.valueOf(positionX)+" "+ String.valueOf(positionY-100);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								commandOut = "WALLS " +String.valueOf(i)+" "+ String.valueOf(j);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								retrieveMap();
@@ -472,11 +605,9 @@ public class GSService implements Runnable {
 							if ((bricksArray[i][j].getX() == (positionX-25)) && (bricksArray[i][j].getY() == (positionY+100))
 									&& map[i][j]!=2) {
 								commandOut = "BOMB "+"2 " +String.valueOf(positionX)+" "+ String.valueOf(positionY+100);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								commandOut = "WALLS " +String.valueOf(i)+" "+ String.valueOf(j);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								retrieveMap();
@@ -489,11 +620,9 @@ public class GSService implements Runnable {
 							if ((bricksArray[i][j].getX() == (positionX+75)) && (bricksArray[i][j].getY() == (positionY))
 									&& map[i][j]!=2) {
 								commandOut = "BOMB "+"3 " +String.valueOf(positionX+100)+" "+ String.valueOf(positionY);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								commandOut = "WALLS " +String.valueOf(i)+" "+ String.valueOf(j);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								retrieveMap();
@@ -506,11 +635,9 @@ public class GSService implements Runnable {
 							if ((bricksArray[i][j].getX() == (positionX-125)) && (bricksArray[i][j].getY() == (positionY))
 									&& map[i][j]!=2) {
 								commandOut = "BOMB "+"4 " +String.valueOf(positionX-100)+" "+ String.valueOf(positionY);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								commandOut = "WALLS " +String.valueOf(i)+" "+ String.valueOf(j);
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 								retrieveMap();
@@ -532,7 +659,6 @@ public class GSService implements Runnable {
 								  (  (bomberman.getX() == (positionX+75)) && (bomberman.getY() == (positionY)) )  ||
 								  (  (bomberman.getX() == (positionX-125)) && (bomberman.getY() == (positionY)) )) {
 								commandOut = "BOMBERMAND ";
-								System.out.println("Sending BOMB: " + commandOut);
 								out.println(commandOut);
 								out.flush();
 							}
@@ -544,18 +670,78 @@ public class GSService implements Runnable {
 			
 			TimerTask task2 = new TimerTask(){
 				public void run() {
+					updateBombPosition();
+				}
+			};
+			
+			TimerTask task3 = new TimerTask(){
+				public void run() {
 					
 					for (int i=0; i< 5 ; i++) {
 						String commandOut = "BOMB "+i +" " +String.valueOf(-100)+" "+ String.valueOf(-100);
-						System.out.println("Sending BOMB: " + commandOut);
+						System.out.println("hello");
 						out.println(commandOut);
 						out.flush();
 					}
+					
+						retrieveEnemyAlive();
+						
+						if (alive==1) { 
+							retrieveEnemyDownAlive();
+							if (enemy_down[0]==0) {
+								retrieveNameScores();
+								score = score + 1000;
+								updateScores(score,name);
+								System.out.println(score);
+								updateEnemyDownAlive(0);
+							}
+						}
+						
+						if (alive2==1) { 
+							retrieveEnemyDownAlive();
+							if (enemy_down[1]==0) {
+								retrieveNameScores();
+								score = score + 1000;
+								updateScores(score,name);
+								System.out.println(score);
+								updateEnemyDownAlive(1);
+							}
+						}
+						
+						if (alive3==1) { 
+							retrieveEnemyDownAlive();
+							if (enemy_down[2]==0) {
+								retrieveNameScores();
+								score = score + 1000;
+								updateScores(score,name);
+								System.out.println(score);
+								updateEnemyDownAlive(2);
+							}
+						}
+						
+						if (alive4==1) { 
+							retrieveEnemyDownAlive();
+							if (enemy_down[3]==0) {
+								retrieveNameScores();
+								score = score + 1000;
+								updateScores(score,name);
+								System.out.println(score);
+								updateEnemyDownAlive(3);
+							}
+						}
+						
+						if (alive==1 && alive2==1 && alive3==1 && alive4==1) {
+							String commandOut = "DISPLAY "+ name +" "+ score;
+							out.println(commandOut);
+							out.flush();
+							updateEnemyAlive4();
+						}
 				}
 			};	
 			
 			timer.schedule(task, 2000);
-			timer.schedule(task2,4000);
+			timer.schedule(task2, 2000);
+			timer.schedule(task3,4000);
 		}
 			
 			
@@ -576,18 +762,19 @@ public class GSService implements Runnable {
 					/*
 					 * String sql = "DROP TABLE PLAYERS"; stmt.executeUpdate(sql); conn.commit();
 					 */
-					String sql = "CREATE TABLE IF NOT EXISTS PLAYERS " +
-					             "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-							     " NAME VARCHAR(255) NOT NULL) ";
-					
+					String sql = "CREATE TABLE IF NOT EXISTS SCORES " +
+				             "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						     " NAME TEXT NOT NULL, " + 
+				             " SCORE INT NOT NULL) ";
+				
 					stmt.executeUpdate(sql);
 					conn.commit();
-					System.out.println("Table PLAYERS Created Successfully");
+					System.out.println("Table Created Successfully");
 					
-					sql = "INSERT INTO PLAYERS (NAME) VALUES " + 
-                            "('"+ name+"')";
-    				stmt.executeUpdate(sql);
-    				conn.commit();
+					sql = "INSERT INTO SCORES (NAME, SCORE) VALUES " + 
+	                       "('"+ name+"', 0)";
+					stmt.executeUpdate(sql);
+					conn.commit();
     				
 	    			conn.close();
 				}
@@ -609,6 +796,91 @@ public class GSService implements Runnable {
 	
 	
 	////////////////////////////////////////////////////////////////////UPDATE ///////////////////////////////////////
+	public void updateScores (int i, String name) {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE SCORES SET SCORE = "+i+" WHERE NAME='"+name+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void updateEnemyAlive4 () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE ENEMY SET ALIVE4 = "+1+" WHERE ID='"+1+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	public void updateEnemyDownAlive (int i) {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE ENEMYDOWN SET ALIVE"+(i+1)+" = "+1+" WHERE ID='"+1+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  		  				
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	
 	public void updateBPosition () {
 		
 		try {
@@ -650,16 +922,6 @@ public class GSService implements Runnable {
 				stmt.executeUpdate(sql);
   				conn.commit();
   				
-      			System.out.println("values updated Successfully");
-                
-      			System.out.println(bomber1);
-  				System.out.println(bomber2);
-  				System.out.println(bomber3);
-  				System.out.println(bomber4);
-  				System.out.println(bomber5);
-  				System.out.println(bomber6);
-  				System.out.println(bomber7);
-      			
                 conn.close();
 			}
 			
@@ -672,6 +934,73 @@ public class GSService implements Runnable {
 		}
 	}
 	
+	public void updateBombPosition () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				
+				conn.setAutoCommit(false);
+				
+				stmt = conn.createStatement();
+				
+				String sql = "UPDATE BOMBPOSITION SET BOMBX = "+positionX+" WHERE ID='"+1+"'";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMBY = "+positionY+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB2X = "+positionX+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB2Y = "+(positionY-100)+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB3X = "+positionX+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB3Y = "+(positionY+100)+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB4X = "+(positionX+75)+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB4Y = "+(positionY)+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB5X = "+(positionX-100)+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+  				sql = "UPDATE BOMBPOSITION SET BOMB5Y = "+(positionY)+" WHERE ID="+1+"";
+				stmt.executeUpdate(sql);
+  				conn.commit();
+  				
+      			
+                
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+
 	public void updateCoordinates () {
 		
 		try {
@@ -694,11 +1023,7 @@ public class GSService implements Runnable {
 				stmt.executeUpdate(sql);
   				conn.commit();
   				
-  				System.out.println("values updated Successfully");
-                
-  				System.out.println(bomberman.getX()+"asdasd");
-  				System.out.println(bomberman.getY()+"asdasd");
-  				
+  				 				
   				
                 conn.close();
 			}
@@ -764,7 +1089,48 @@ public class GSService implements Runnable {
 			e1.printStackTrace();
 		}
 	}
-	//////////////////////////////////////////////////////////RETRIEVE/////////////////////////////////////////////
+	
+	//////////////////////////////////////////////////////////RETRIEVE VALUES/////////////////////////////////////////////
+	
+	public void retrieveBombPosition() {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				String sql ="SELECT * FROM BOMBPOSITION WHERE ID="+1+"";
+                ResultSet rs = stmt.executeQuery(sql);
+				
+  				while ( rs.next() ) {
+					bomb_ex[0].setX(rs.getInt("BOMBX")) ;
+					bomb_ex[0].setY(rs.getInt("BOMBY")) ;
+					bomb_ex[1].setX(rs.getInt("BOMB2X")) ;
+					bomb_ex[1].setY(rs.getInt("BOMB2Y")) ;
+					bomb_ex[2].setX(rs.getInt("BOMB3X")) ;
+					bomb_ex[2].setY(rs.getInt("BOMB3Y")) ;
+					bomb_ex[3].setX(rs.getInt("BOMB4X")) ;
+					bomb_ex[3].setY(rs.getInt("BOMB4Y")) ;
+					bomb_ex[4].setX(rs.getInt("BOMB5X")) ;
+					bomb_ex[4].setY(rs.getInt("BOMB5Y")) ;
+				}
+  				
+  				
+  				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
 	
 	public void retrieveMap () {
 		
@@ -804,7 +1170,113 @@ public class GSService implements Runnable {
 		}
 	}
 	
+	public void retrieveEnemyAlive () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				String sql ="SELECT * FROM ENEMY WHERE ID="+1+"";
+                ResultSet rs = stmt.executeQuery(sql);
+				
+  				while ( rs.next() ) {
+					alive = rs.getInt("ALIVE");
+					alive2 = rs.getInt("ALIVE2");
+					alive3 = rs.getInt("ALIVE3");
+					alive4 = rs.getInt("ALIVE4");
+				}
+  				
+  				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
 	
+	public void retrieveNameScores () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				String sql ="SELECT * FROM SCORES WHERE ID="+1+"";
+                ResultSet rs = stmt.executeQuery(sql);
+				
+  				while ( rs.next() ) {
+					name = rs.getString("NAME");
+					score = rs.getInt("SCORE");
+				}
+  				
+  				System.out.println(name);
+  				
+  				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void retrieveEnemyDownAlive () {
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+			
+			
+			String dbURL = "jdbc:sqlite:product.db";
+			conn = DriverManager.getConnection(dbURL);
+			
+			if (conn != null) {
+				conn.setAutoCommit(false);
+				stmt = conn.createStatement();
+				String sql ="SELECT * FROM ENEMYDOWN WHERE ID="+1+"";
+                ResultSet rs = stmt.executeQuery(sql);
+				
+  				while ( rs.next() ) {
+					enemy_down[0] = rs.getInt("ALIVE1");
+					enemy_down[1] = rs.getInt("ALIVE2");
+					enemy_down[2] = rs.getInt("ALIVE3");
+					enemy_down[3] = rs.getInt("ALIVE4");
+				}
+  				
+  				System.out.println(enemy_down[0]);
+  				
+  				
+  				rs.close();
+                conn.close();
+			}
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
 
 	public void retrieveBPosition () {
 		
@@ -866,9 +1338,6 @@ public class GSService implements Runnable {
 					bomberman.setY(rs.getInt("Y"));
 				}
   				
-  				System.out.println(bomberman.getX());
-  				System.out.println(bomberman.getY());
-  				
   				rs.close();
                 conn.close();
 			}
@@ -882,7 +1351,7 @@ public class GSService implements Runnable {
 		}
 	}
 	
-	////////////////////////////////////////////////////ARRAYANDLONGS/////////////////////////////////////////////
+	////////////////////////////////////////////////////ARRAY AND LONGS/////////////////////////////////////////////
 	
 	public void inToArrayMap() {
 		
@@ -931,11 +1400,13 @@ public class GSService implements Runnable {
 		
 		
 	}
+	
 	/////////////////////////////////////////////////////////////////CONTROLS///////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	public void movingDown() {
 		
 			
