@@ -23,7 +23,7 @@ public class GSService implements Runnable {
 	private long bomber1, bomber2, bomber3, bomber4, bomber5, bomber6, bomber7;
 	private int[][]bombermanPosition = { {1,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3} };
 	private int positionX, positionY;
-	private int score=0;
+	private int score=0, flag1=0;
 	private String name="";
 	private enemy enemy[] = new enemy[4];
 	private bomb bomb_ex[] = new bomb[5];
@@ -541,6 +541,7 @@ public class GSService implements Runnable {
 		}
 		
 		if ( command.equals("MOVE")) {
+			
 			int enemyNo = in.nextInt();
 			
 			retrieveCoordinates();
@@ -658,9 +659,14 @@ public class GSService implements Runnable {
 								  (  (bomberman.getX() == (positionX)) && (bomberman.getY() == (positionY+100)) )  ||
 								  (  (bomberman.getX() == (positionX+75)) && (bomberman.getY() == (positionY)) )  ||
 								  (  (bomberman.getX() == (positionX-125)) && (bomberman.getY() == (positionY)) )) {
-								commandOut = "BOMBERMAND ";
+								retrieveNameScores();
+								if (flag1==0) {
+								flag1=1;
+								commandOut = "BOMBERMAND "+name+" "+ score;
 								out.println(commandOut);
 								out.flush();
+								
+								}
 							}
 						}
 					}
@@ -679,7 +685,6 @@ public class GSService implements Runnable {
 					
 					for (int i=0; i< 5 ; i++) {
 						String commandOut = "BOMB "+i +" " +String.valueOf(-100)+" "+ String.valueOf(-100);
-						System.out.println("hello");
 						out.println(commandOut);
 						out.flush();
 					}
@@ -796,6 +801,7 @@ public class GSService implements Runnable {
 	
 	
 	////////////////////////////////////////////////////////////////////UPDATE ///////////////////////////////////////
+	
 	public void updateScores (int i, String name) {
 		
 		try {
